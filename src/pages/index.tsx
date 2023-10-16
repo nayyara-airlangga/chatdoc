@@ -56,7 +56,7 @@ export default function Home() {
                   disabled
                   className="flex flex-row justify-center gap-2 align-middle"
                 >
-                  <Loader2 size={16} />
+                  <Loader2 size={16} className="animate-spin" />
                   Loading
                 </Button>
               )}

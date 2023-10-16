@@ -4,8 +4,33 @@ import {
   text,
   primaryKey,
   integer,
+  varchar,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
+
+export const messageRoles = pgEnum("chat_message_roles", ["user", "system"]);
+
+export const chats = pgTable("chats", {
+  id: integer("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  docName: varchar("doc_name", { length: 255 }).notNull(),
+  docLink: text("doc_link").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  fileId: text("file_id").notNull(),
+});
+
+export const messages = pgTable("chat_messages", {
+  id: integer("id").primaryKey(),
+  chatId: integer("chat_id").notNull(),
+  content: varchar("content", { length: 5000 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  role: messageRoles("role").notNull(),
+});
 
 export const users = pgTable("user", {
   id: text("id").notNull().primaryKey(),

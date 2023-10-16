@@ -1,4 +1,4 @@
-import { useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import { Button } from "~/components/ui/button";
 
@@ -19,9 +19,12 @@ export default function Home() {
         {isLoading ? (
           <h1 className="text-white">Loading...</h1>
         ) : session == null ? (
-          <Button>Sign In</Button>
+          <Button onClick={() => void signIn("google")}>Sign In</Button>
         ) : (
-          <h1 className="text-white">{data?.greeting}</h1>
+          <>
+            <h1 className="text-white">{data?.greeting}</h1>
+            <Button onClick={() => void signOut()}>Sign Out</Button>
+          </>
         )}
       </main>
     </>

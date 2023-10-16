@@ -4,6 +4,7 @@ import Head from "next/head";
 import { Icon } from "@iconify/react";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
+import { FileUpload } from "~/modules/home/components/FileUpload";
 
 export default function Home() {
   const { status } = useSession();
@@ -27,7 +28,7 @@ export default function Home() {
               etc.? Chat with your document directly to find your answers ASAP.
             </p>
 
-            <div className="mt-3 flex items-center gap-4">
+            <div className="mt-3 flex flex-col items-center gap-4">
               {status === "unauthenticated" ? (
                 <Button
                   className="flex flex-row justify-center gap-2 align-middle"
@@ -39,18 +40,21 @@ export default function Home() {
                   Sign in with Google
                 </Button>
               ) : status === "authenticated" ? (
-                <>
-                  <Button asChild variant="secondary">
-                    <Link href="/chats">Go to Chats</Link>
-                  </Button>
-                  <Button
-                    onClick={() => void signOut()}
-                    className="flex flex-row justify-center gap-2 align-middle"
-                  >
-                    <LogOut size={16} />
-                    Sign Out
-                  </Button>
-                </>
+                <div className="max-w-xl">
+                  <div className="mb-4 flex items-center gap-4">
+                    <Button asChild variant="secondary">
+                      <Link href="/chats">Go to Chats</Link>
+                    </Button>
+                    <Button
+                      onClick={() => void signOut()}
+                      className="flex flex-row justify-center gap-2 align-middle"
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </Button>
+                  </div>
+                  <FileUpload />
+                </div>
               ) : (
                 <Button
                   disabled

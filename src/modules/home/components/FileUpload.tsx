@@ -1,15 +1,67 @@
-import { Inbox } from "lucide-react";
-import React from "react";
+import axios from "axios";
+import { Inbox, Loader2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { useToast } from "~/components/ui/use-toast";
+import { api } from "~/utils/api";
 
 export const FileUpload: React.FC = () => {
-  const { getRootProps, getInputProps } = useDropzone({
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [presignedUrl, setPresignedUrl] = useState<string | null>(null);
+  const { mutateAsync: fetchPresignedUrl, isLoading } =
+    api.document.getS3UploadPresignedUrl.useMutation();
+
+  const { toast } = useToast();
+
+  const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
     accept: { "application/pdf": [".pdf"] },
     maxFiles: 1,
-    onDrop: (acceptedFiles) => {
-      console.log(acceptedFiles);
+    onDropAccepted: (acceptedFiles) => {
+      const file = acceptedFiles[0] as File;
+
+      fetchPresignedUrl({
+        key: file.name,
+      })
+        .then((url) => {
+          setIsUploading(true);
+          setPresignedUrl(url);
+        })
+        .catch(() =>
+          toast({
+            variant: "destructive",
+            title: "Failed to upload your document.",
+          }),
+        );
     },
   });
+
+  useEffect(() => {
+    if (acceptedFiles.length > 0 && presignedUrl !== null) {
+      setIsUploading(true);
+
+      const file = acceptedFiles[0]!;
+
+      axios
+        .put(presignedUrl, file.slice(), {
+          headers: {
+            "Content-Type": file.type,
+          },
+        })
+        .then(() => {
+          setIsUploading(false);
+          toast({
+            title: "Document uploaded successfully!",
+          });
+        })
+        .catch(() => {
+          setIsUploading(false);
+          toast({
+            variant: "destructive",
+            title: "Failed to upload your document.",
+          });
+        });
+    }
+  }, [presignedUrl, acceptedFiles, toast]);
 
   return (
     <div className="rounded-xl bg-white p-2">
@@ -19,10 +71,16 @@ export const FileUpload: React.FC = () => {
             "border-dashed border-2 rounded-xl cursor-pointer bg-gray-50 py-8 flex flex-col justify-center items-center",
         })}
       >
-        <input {...getInputProps()} />
+        <input disabled={isLoading || isUploading} {...getInputProps()} />
         <>
-          <Inbox className="h-10 w-10 text-blue-500" />
-          <p className="mt-2 text-sm text-slate-400">Insert File Here</p>
+          {isLoading || isUploading ? (
+            <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+          ) : (
+            <Inbox className="h-10 w-10 text-blue-500" />
+          )}
+          <p className="mt-2 text-sm text-slate-400">
+            {isLoading || isUploading ? "Uploading..." : "Insert File Here"}
+          </p>
         </>
       </div>
     </div>

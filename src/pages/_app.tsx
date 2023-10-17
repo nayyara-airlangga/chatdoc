@@ -5,6 +5,7 @@ import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
+import { ToastProvider } from "~/components/ui/toast";
 import { Toaster } from "~/components/ui/toaster";
 
 const MyApp: AppType<{ session: Session | null }> = ({
@@ -12,10 +13,12 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    <SessionProvider session={session}>
-      <Component {...pageProps} />
+    <ToastProvider duration={3000}>
+      <SessionProvider session={session}>
+        <Component {...pageProps} />
+      </SessionProvider>
       <Toaster />
-    </SessionProvider>
+    </ToastProvider>
   );
 };
 

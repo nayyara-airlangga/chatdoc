@@ -16,6 +16,7 @@ export const FileUpload: React.FC = () => {
   const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
     accept: { "application/pdf": [".pdf"] },
     maxFiles: 1,
+    maxSize: 25 * 2 ** 20,
     onDropAccepted: (acceptedFiles) => {
       const file = acceptedFiles[0] as File;
 
@@ -32,6 +33,22 @@ export const FileUpload: React.FC = () => {
             title: "Failed to upload your document.",
           }),
         );
+    },
+    onDropRejected: (fileRejections) => {
+      const rejection = fileRejections[0]!;
+      const err = rejection.errors[0]!;
+
+      if (err.code === "file-too-large") {
+        toast({
+          variant: "destructive",
+          title: "File can't be larger than 25 MBs",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Failed to upload your document.",
+        });
+      }
     },
   });
 

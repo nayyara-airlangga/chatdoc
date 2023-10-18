@@ -10,21 +10,22 @@ import {
 import type { AdapterAccount } from "@auth/core/adapters";
 
 export const messageRoles = pgEnum("chat_message_roles", ["user", "system"]);
+export const documentTypes = pgEnum("chat_document_types", ["pdf"]);
 
 export const chats = pgTable("chats", {
-  id: integer("id").primaryKey(),
+  id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
+  docType: documentTypes("doc_type").notNull(),
   docName: varchar("doc_name", { length: 255 }).notNull(),
-  docLink: text("doc_link").notNull(),
+  docKey: text("doc_key").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-  fileId: text("file_id").notNull(),
 });
 
 export const messages = pgTable("chat_messages", {
-  id: integer("id").primaryKey(),
-  chatId: integer("chat_id").notNull(),
+  id: text("id").primaryKey(),
+  chatId: text("chat_id").notNull(),
   content: varchar("content", { length: 5000 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

@@ -11,6 +11,7 @@ export const FileUpload: React.FC = () => {
   const [fileKey, setFileKey] = useState<string | null>(null);
   const { mutateAsync: fetchPresignedUrl, isLoading } =
     api.document.getS3UploadPresignedUrl.useMutation();
+  const { mutateAsync: createChat } = api.chat.createChat.useMutation();
 
   const { toast } = useToast();
 
@@ -69,6 +70,12 @@ export const FileUpload: React.FC = () => {
             },
           });
 
+          await createChat({
+            docName: file.name,
+            docKey: fileKey,
+            docType: "pdf",
+          });
+
           toast({
             title: "Document uploaded successfully!",
             variant: "success",
@@ -85,7 +92,7 @@ export const FileUpload: React.FC = () => {
         }
       })();
     }
-  }, [presignedUrl, acceptedFiles, fileKey, toast]);
+  }, [presignedUrl, acceptedFiles, fileKey, toast, createChat]);
 
   return (
     <div className="rounded-xl bg-white p-2">

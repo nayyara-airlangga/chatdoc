@@ -69,6 +69,7 @@ export const FileUpload: React.FC = () => {
           setPresignedUrl(null);
           toast({
             title: "Document uploaded successfully!",
+            variant: "success",
           });
         })
         .catch(() => {
@@ -90,7 +91,12 @@ export const FileUpload: React.FC = () => {
             "border-dashed border-2 rounded-xl cursor-pointer bg-gray-50 py-8 flex flex-col justify-center items-center",
         })}
       >
-        <input disabled={isLoading || isUploading} {...getInputProps()} />
+        <input
+          {...getInputProps({
+            multiple: false,
+            disabled: isLoading || isUploading,
+          })}
+        />
         <>
           {isLoading || isUploading ? (
             <Loader2 className="h-10 w-10 animate-spin text-blue-500" />

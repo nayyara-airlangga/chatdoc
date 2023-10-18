@@ -10,7 +10,7 @@ export const documentRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const uploadCommand = new PutObjectCommand({
         Bucket: env.AWS_S3_BUCKET_NAME,
-        Key: "documents/" + ctx.session.user.id + "-" + input.key,
+        Key: "documents/" + ctx.session.user.id + "_" + input.key,
       });
 
       return await getSignedUrl(ctx.s3, uploadCommand);

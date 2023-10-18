@@ -20,7 +20,7 @@ export const FileUpload: React.FC = () => {
       const file = acceptedFiles[0] as File;
 
       fetchPresignedUrl({
-        key: file.name,
+        key: Date.now().toString() + "_" + file.name,
       })
         .then((url) => {
           setIsUploading(true);
@@ -49,12 +49,14 @@ export const FileUpload: React.FC = () => {
         })
         .then(() => {
           setIsUploading(false);
+          setPresignedUrl(null);
           toast({
             title: "Document uploaded successfully!",
           });
         })
         .catch(() => {
           setIsUploading(false);
+          setPresignedUrl(null);
           toast({
             variant: "destructive",
             title: "Failed to upload your document.",

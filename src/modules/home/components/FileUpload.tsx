@@ -8,6 +8,7 @@ import { api } from "~/utils/api";
 export const FileUpload: React.FC = () => {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [presignedUrl, setPresignedUrl] = useState<string | null>(null);
+  const [fileKey, setFileKey] = useState<string | null>(null);
   const { mutateAsync: fetchPresignedUrl, isLoading } =
     api.document.getS3UploadPresignedUrl.useMutation();
 
@@ -19,13 +20,15 @@ export const FileUpload: React.FC = () => {
     maxSize: 25 * 2 ** 20,
     onDropAccepted: (acceptedFiles) => {
       const file = acceptedFiles[0] as File;
+      const fileKey = Date.now().toString() + "_" + file.name;
 
       fetchPresignedUrl({
-        key: Date.now().toString() + "_" + file.name,
+        key: fileKey,
       })
         .then((url) => {
           setIsUploading(true);
           setPresignedUrl(url);
+          setFileKey(fileKey);
         })
         .catch(() =>
           toast({
@@ -53,35 +56,36 @@ export const FileUpload: React.FC = () => {
   });
 
   useEffect(() => {
-    if (acceptedFiles.length > 0 && presignedUrl !== null) {
+    if (acceptedFiles.length > 0 && presignedUrl !== null && fileKey !== null) {
       setIsUploading(true);
 
       const file = acceptedFiles[0]!;
 
-      axios
-        .put(presignedUrl, file.slice(), {
-          headers: {
-            "Content-Type": file.type,
-          },
-        })
-        .then(() => {
-          setIsUploading(false);
-          setPresignedUrl(null);
+      void (async () => {
+        try {
+          await axios.put(presignedUrl, file.slice(), {
+            headers: {
+              "Content-Type": file.type,
+            },
+          });
+
           toast({
             title: "Document uploaded successfully!",
             variant: "success",
           });
-        })
-        .catch(() => {
-          setIsUploading(false);
-          setPresignedUrl(null);
+        } catch (err) {
           toast({
             variant: "destructive",
             title: "Failed to upload your document.",
           });
-        });
+        } finally {
+          setIsUploading(false);
+          setPresignedUrl(null);
+          setFileKey(null);
+        }
+      })();
     }
-  }, [presignedUrl, acceptedFiles, toast]);
+  }, [presignedUrl, acceptedFiles, fileKey, toast]);
 
   return (
     <div className="rounded-xl bg-white p-2">

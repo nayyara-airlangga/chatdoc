@@ -73,19 +73,20 @@ export const FileUpload: React.FC = () => {
             },
           });
 
-          const chat = await createChat({
-            docName: file.name,
-            docKey: fileKey,
-            docType: "pdf",
-          });
-
           const downloadUrl = await documentAPI.getS3ObjectPresignedUrl.fetch({
-            key: chat.docKey,
+            key: fileKey,
           });
 
           await loadFromS3ToPinecone({
-            fileKey: chat.docKey,
+            fileKey,
             presignedDownloadUrl: downloadUrl,
+          });
+
+          // TODO: redirect to chat page once chats is finished
+          await createChat({
+            docName: file.name,
+            docKey: fileKey,
+            docType: "pdf",
           });
 
           toast({

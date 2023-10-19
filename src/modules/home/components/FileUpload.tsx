@@ -9,13 +9,17 @@ export const FileUpload: React.FC = () => {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [presignedUrl, setPresignedUrl] = useState<string | null>(null);
   const [fileKey, setFileKey] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const { mutateAsync: fetchPresignedUrl, isLoading } =
     api.document.getS3UploadPresignedUrl.useMutation();
   const { mutateAsync: createChat } = api.chat.createChat.useMutation();
+  const { mutateAsync: loadFromS3ToPinecone } =
+    api.document.loadFromS3ToPinecone.useMutation();
+  const documentAPI = api.useContext().document;
 
   const { toast } = useToast();
 
-  const { getRootProps, getInputProps, acceptedFiles } = useDropzone({
+  const { getRootProps, getInputProps } = useDropzone({
     accept: { "application/pdf": [".pdf"] },
     maxFiles: 1,
     maxSize: 25 * 2 ** 20,
@@ -30,6 +34,7 @@ export const FileUpload: React.FC = () => {
           setIsUploading(true);
           setPresignedUrl(url);
           setFileKey(fileKey);
+          setFile(file);
         })
         .catch(() =>
           toast({
@@ -57,23 +62,30 @@ export const FileUpload: React.FC = () => {
   });
 
   useEffect(() => {
-    if (acceptedFiles.length > 0 && presignedUrl !== null && fileKey !== null) {
+    if (file !== null && presignedUrl !== null && fileKey !== null) {
       setIsUploading(true);
-
-      const file = acceptedFiles[0]!;
 
       void (async () => {
         try {
-          await axios.put(presignedUrl, file.slice(), {
+          await axios.put(presignedUrl, file, {
             headers: {
               "Content-Type": file.type,
             },
           });
 
-          await createChat({
+          const chat = await createChat({
             docName: file.name,
             docKey: fileKey,
             docType: "pdf",
+          });
+
+          const downloadUrl = await documentAPI.getS3ObjectPresignedUrl.fetch({
+            key: chat.docKey,
+          });
+
+          await loadFromS3ToPinecone({
+            fileKey: chat.docKey,
+            presignedDownloadUrl: downloadUrl,
           });
 
           toast({
@@ -89,10 +101,13 @@ export const FileUpload: React.FC = () => {
           setIsUploading(false);
           setPresignedUrl(null);
           setFileKey(null);
+          setFile(null);
         }
       })();
     }
-  }, [presignedUrl, acceptedFiles, fileKey, toast, createChat]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presignedUrl, file, fileKey]);
 
   return (
     <div className="rounded-xl bg-white p-2">

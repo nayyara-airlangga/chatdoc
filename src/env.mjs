@@ -36,6 +36,7 @@ export const env = createEnv({
     AWS_S3_SECRET_ACCESS_KEY: z.string(),
     PINECONE_API_KEY: z.string(),
     PINECONE_ENV: z.string(),
+    TMP_DIR: z.string(),
   },
 
   /**
@@ -64,6 +65,7 @@ export const env = createEnv({
     AWS_S3_SECRET_ACCESS_KEY: process.env.AWS_S3_SECRET_ACCESS_KEY,
     PINECONE_API_KEY: process.env.PINECONE_API_KEY,
     PINECONE_ENV: process.env.PINECONE_ENV,
+    TMP_DIR: process.env.TMP_DIR,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
